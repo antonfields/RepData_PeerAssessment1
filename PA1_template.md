@@ -7,7 +7,8 @@ output:
 
 This is a markdown file for the Coursera reproducible research course - project 1. The following code has been written utilising the tidyverse group of packages.
 
-```{r message = FALSE}
+
+```r
 # Set global options for code chunks and load packages
 knitr::opts_chunk$set(echo=TRUE, message = FALSE)
 library(tidyverse)
@@ -18,7 +19,8 @@ library(tidyverse)
 
 The data is presented in a tidy format, however the date column needs to be converted to *date* format data.
 
-```{r}
+
+```r
 orig_data <- read.csv("activity.csv")
 data <- orig_data %>%
         mutate(date = as.Date(date, "%Y-%m-%d"))
@@ -31,7 +33,8 @@ In order to answer this question, we need to group the data by date, then calcul
 
 A histogram plotting just the total steps per day show two distinct peaks - one at zero, where no steps have been recorded, the other around the 10,000 step mark.
 
-```{r histogram 1}
+
+```r
 # Prepare data for histogram
 hist_data <- data %>%
         group_by(date) %>%
@@ -45,9 +48,12 @@ hist_data %>%
                        binwidth = 2500)
 ```
 
+![](PA1_template_files/figure-html/histogram 1-1.png)<!-- -->
+
 A little more code is required to calculate the mean and median:
 
-```{r}
+
+```r
 # Calculate mean and median for total steps per day
 stats <- hist_data %>%
         summarise(mean = mean(total_steps),
@@ -55,12 +61,20 @@ stats <- hist_data %>%
 stats
 ```
 
+```
+## # A tibble: 1 x 2
+##    mean median
+##   <dbl>  <int>
+## 1 9354.  10395
+```
+
 
 ## What is the average daily activity pattern?
 
 We are now looking at the average number of steps per interval, so data needs to be grouped by interval, and the average steps calculated. Again ignoring *NA's*. This is visualised through a time series plot.
 
-```{r tsplot1}
+
+```r
 # Prepare data for time series plot
 tsplot_data <- data %>%
         group_by(interval) %>%
@@ -68,12 +82,16 @@ tsplot_data <- data %>%
 
 # Time series plot = average number of steps for each interval
 tsplot_data %>% ggplot(aes(interval, avg_steps)) + geom_line()
+```
 
+![](PA1_template_files/figure-html/tsplot1-1.png)<!-- -->
+
+```r
 # Which interval, on average, has the maxmimum number of steps per day 
 max_interval <- tsplot_data %>% filter(avg_steps == max(avg_steps))
 ```
 
-The times series plot shows a clear peak at **interval `r max_interval$interval`** which has the highest average number of steps per day.
+The times series plot shows a clear peak at **interval 835** which has the highest average number of steps per day.
 
 
 ## Imputing missing values
@@ -82,16 +100,18 @@ Up to now the *NA* values have been excluded from any calculations. However they
 #### How much data is missing?
 How many missing values are there?
 
-```{r}
+
+```r
 # How many rows in the dataset have missing values?
 missing <- sum(!complete.cases(data))
 ```
-There are `r missing` observations with missing data.
+There are 2304 observations with missing data.
 
 #### Filling the gaps
 For this analysis, the *NA* value will be imputed using the mean value for the timelot and day of the week. Limited thought has gone into selecting this method.
 
-```{r}
+
+```r
 # Calculating the imputed values in a new data set using mean by interval and
 # week day. Also adding weekend factor variable for later use
 imp_data <- data %>%
@@ -105,7 +125,8 @@ imp_data <- data %>%
 
 Histogram with the imputed data included:
 
-```{r histogram2}
+
+```r
 # Summarising data by date for an updated histogram
 hist2_data <- imp_data %>%
         group_by(date) %>%
@@ -119,13 +140,23 @@ hist2_data %>%
                        binwidth = 2500)
 ```
 
+![](PA1_template_files/figure-html/histogram2-1.png)<!-- -->
+
 Calculating the mean and median for the imputed data:
 
-```{r}
+
+```r
 # Calcualte the mean and median including the imputed data
 stats2 <- hist2_data %>% summarise(mean = mean(total_steps),
                                    median = median(total_steps))
 stats2
+```
+
+```
+## # A tibble: 1 x 2
+##     mean median
+##    <dbl>  <dbl>
+## 1 10821.  11015
 ```
 
 The mean and median have both increased when the imputed data is included.
@@ -134,7 +165,8 @@ The mean and median have both increased when the imputed data is included.
 
 Comparing average weekday activity with weekend activity:
 
-```{r tsplot2}
+
+```r
 # Prepare date for time series plot
 tsplot2_data <- imp_data %>%
         group_by(weekend, interval) %>%
@@ -147,6 +179,8 @@ tsplot2_data %>%
         geom_line(color = "dark blue") +
         facet_grid(weekend ~ .)
 ```
+
+![](PA1_template_files/figure-html/tsplot2-1.png)<!-- -->
 
 
 
